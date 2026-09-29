@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CHAITANIO</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section id="screen-home" class="screen active">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">C</span><span>CHAITANIO</span></div>
+        <div class="top-actions"><button class="icon-btn" aria-label="Buscar" onclick="openSearch()">⌕</button><button class="icon-btn" aria-label="Notificaciones" onclick="showNotifications()">♧</button></div>
+      </header>
+
+      <div class="city-picker"><label for="city-select">📍 Explorar ciudad</label><select id="city-select" onchange="changeCity(this.value)"><option value="Todas">Toda España</option><option>Madrid</option><option>Barcelona</option><option>Valencia</option><option>Málaga</option></select></div>
+      <div class="city-note" id="city-note">Explorando eventos de toda España · Demo</div>
+      <div class="stories" id="stories"></div>
+
+      <div class="section-head"><h2>Cerca de ti</h2><button class="link-btn" onclick="showScreen('map')">Mapa ›</button><button onclick="showScreen('events')">Ver todos ›</button></div>
+      <div class="people-row" id="people"></div>
+
+      <div class="section-head"><h2>🔴 Lives cerca de ti</h2><button onclick="showScreen('live')">Ver todos ›</button></div><div id="home-live-list" class="live-strip"></div>
+
+      <div class="section-head"><h2>Eventos destacados</h2><button onclick="showScreen('events')">Ver todos ›</button></div>
+      <div class="event-grid" id="featured"></div>
+
+      <div class="section-head"><h2>Personas que también te pueden gustar</h2><button onclick="showScreen('home');document.getElementById('suggested').scrollIntoView({behavior:'smooth'})">Ver todos ›</button></div>
+      <div class="people-row" id="suggested"></div>
+    </section>
+
+    <section id="screen-events" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('home')">‹</button><h1>Eventos cerca de ti</h1><button class="filter" onclick="cycleEventFilter()">☷</button></header>
+      <div class="chips"><button class="selected" onclick="filterEventsByTime('Hoy',this)">Hoy</button><button onclick="filterEventsByTime('Mañana',this)">Mañana</button><button onclick="filterEventsByTime('Este fin de semana',this)">Este fin de semana</button><button onclick="filterEventsByTime('Todos',this)">Todos</button></div>
+      <div id="event-list" class="event-list"></div>
+    </section>
+
+
+    <section id="screen-live" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('home')">‹</button><h1>🔴 Lives de locales</h1><button class="filter" onclick="showScreen('business')">🏢</button></header>
+      <p class="muted">Descubre qué está pasando ahora en tus locales favoritos.</p>
+      <div id="live-list" class="live-list"></div>
+      <button class="primary-btn" onclick="showScreen('business')">🏢 Área de locales y empresarios</button>
+    </section>
+    <section id="screen-create-post" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('home')">‹</button><h1>Crear publicación</h1></header>
+      <label>¿Qué quieres compartir?<textarea id="post-text" class="form-input" rows="4" placeholder="Comparte un momento, una foto o una idea…"></textarea></label>
+      <label class="upload-label">Añadir foto o vídeo<input id="post-media" class="form-input" type="file" accept="image/*,video/*"></label>
+      <button class="primary-btn" onclick="publishPost()">📸 Publicar</button>
+      <p id="post-feedback" class="muted" aria-live="polite"></p><div id="post-feed" class="post-feed"></div>
+    </section>
+    <section id="screen-business" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('live')">‹</button><h1>Cuenta de empresario</h1></header>
+      <p class="muted">Herramientas de demostración para gestionar un local en Chaitanio.</p>
+      <div class="business-card"><div class="brand-mark">🏢</div><h2>Área profesional</h2><p>Gestiona la presencia de tu local, publica eventos y prepara directos.</p>
+        <label>Nombre del local<input id="business-name" class="form-input" placeholder="Ej. Sala Eclipse"></label>
+        <label>Descripción<input id="business-description" class="form-input" placeholder="Música, ambiente, horarios…"></label>
+        <button class="primary-btn" onclick="saveBusiness()">Guardar datos del local</button>
+        <button class="secondary-btn" onclick="startLive()">🔴 Preparar un Live (demo)</button><button class="primary-btn" onclick="showScreen('tickets');switchTicketTab('manage')">🎟️ Gestionar entradas y cobros</button><p id="business-feedback" class="muted" aria-live="polite"></p>
+      </div>
+      <div class="section-head"><h2>Panel de propietario</h2><span class="tag">Vista de demostración</span></div>
+      <div class="admin-grid"><div><strong id="admin-users">8</strong><span>Usuarios de prueba</span></div><div><strong id="admin-posts">0</strong><span>Publicaciones locales</span></div><div><strong id="admin-reports">0</strong><span>Incidencias de prueba</span></div></div>
+      <p class="muted">En una versión real, este panel requerirá inicio de sesión seguro, permisos de propietario y registros de auditoría. Esta demo no contiene usuarios reales ni backend.</p>
+    </section>
+
+    <section id="screen-auth" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('profile')">‹</button><h1>Tu cuenta CHAITANIO</h1></header>
+      <div class="business-card">
+        <div class="brand-mark">C</div>
+        <h2 id="auth-title">Crear tu cuenta</h2>
+        <p class="muted">Prepara tu perfil para descubrir eventos y conectar con personas.</p>
+        <div class="ticket-tabs"><button id="auth-tab-register" class="selected" onclick="switchAuthMode('register')">Registrarme</button><button id="auth-tab-login" onclick="switchAuthMode('login')">Iniciar sesión</button></div>
+        <form id="auth-form" onsubmit="submitDemoAuth(event)">
+          <label id="auth-name-label">Nombre<input id="auth-name" class="form-input" autocomplete="name" placeholder="Tu nombre"></label>
+          <label>Correo electrónico<input id="auth-email" class="form-input" type="email" autocomplete="email" required placeholder="tu@correo.com"></label>
+          <label>Contraseña<input id="auth-password" class="form-input" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo 8 caracteres"></label>
+          <label>Tipo de cuenta<select id="auth-type" class="form-input"><option value="personal">Cuenta personal</option><option value="business">Cuenta de empresario</option></select></label>
+          <button id="auth-submit" class="primary-btn" type="submit">Crear cuenta de prueba</button>
+        </form>
+        <p id="auth-feedback" class="muted" aria-live="polite">Modo demostración: no se creará una cuenta real ni se enviarán tus datos a un servidor.</p>
+      </div>
+    </section>
+
+    <section id="screen-account" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('profile')">‹</button><h1>Tipo de cuenta</h1></header>
+      <p class="muted">Elige cómo quieres usar CHAITANIO. Podrás volver a cambiarlo cuando quieras.</p>
+      <button class="account-choice" onclick="setAccountType('personal')"><span>👤</span><strong>Cuenta personal</strong><small>Descubrir eventos, conocer gente, chatear y comprar entradas.</small></button>
+      <button class="account-choice" onclick="setAccountType('business')"><span>🏢</span><strong>Cuenta de empresario</strong><small>Gestionar tu local, publicar eventos y revisar entradas y cobros.</small></button>
+      <p id="account-feedback" class="muted" aria-live="polite"></p>
+    </section>
+
+    <section id="screen-map" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('home')">‹</button><h1>Mapa</h1><button class="filter" onclick="showScreen('events')">☷</button></header>
+      <div class="map">
+        <div class="road r1"></div><div class="road r2"></div><div class="road r3"></div>
+        <div class="map-pin p1">C</div><div class="map-pin p2">C</div><div class="map-pin p3">●</div><div class="map-pin p4">C</div>
+        <div class="map-card"><strong>Rumba Latina 🔥</strong><span>Hoy · 22:00 · 0,8 km</span></div>
+      </div>
+    </section>
+
+    <section id="screen-chat" class="screen">
+      <header class="page-head"><h1>Chat</h1><button class="filter">☷</button></header>
+      <div class="chat-tabs"><button class="selected">Todos</button><button>En línea</button><button>Nuevos</button></div>
+      <div id="chat-list" class="chat-list"></div>
+    </section>
+
+    <section id="screen-event-detail" class="screen"></section>
+
+    <section id="screen-person-detail" class="screen"></section>
+
+    <section id="screen-chat-detail" class="screen"></section>
+
+
+    <section id="screen-tickets" class="screen">
+      <header class="page-head"><button class="back" onclick="showScreen('profile')">‹</button><h1>Entradas y cobros</h1><button class="filter" onclick="showScreen('business')">🏢</button></header>
+      <div class="ticket-tabs"><button class="selected" onclick="switchTicketTab('buy',this)">Comprar</button><button onclick="switchTicketTab('my',this)">Mis entradas</button><button onclick="switchTicketTab('manage',this)">Gestión</button></div>
+      <div id="ticket-buy" class="ticket-panel"><div class="notice-card"><strong>🎟️ Entradas de Chaitanio</strong><p>Elige un evento y el tipo de entrada. Este prototipo no cobra dinero real.</p></div>
+        <label>Evento<select id="ticket-event" class="form-input"><option>Rumba Latina</option><option>Tech House Night</option><option>Urban Vibes</option><option>Neon Party</option><option>Brunch & Beats</option><option>Plan al Sol</option></select></label>
+        <div class="ticket-type"><div><b>Entrada general</b><small>Acceso estándar · QR individual</small></div><strong>15,00 €</strong></div>
+        <label>Unidades<select id="ticket-quantity" class="form-input" onchange="updateTicketTotal()"><option value="1">1 entrada</option><option value="2">2 entradas</option><option value="3">3 entradas</option><option value="4">4 entradas</option><option value="5">5 entradas</option></select></label>
+        <div class="total-row"><span>Total de demostración</span><strong id="ticket-total">15,00 €</strong></div><h3>Método de pago preferido</h3>
+        <div class="payment-options"><label><input type="radio" name="payment-method" value="Bizum" checked> Bizum</label><label><input type="radio" name="payment-method" value="Revolut"> Revolut</label><label><input type="radio" name="payment-method" value="Tarjeta"> Tarjeta</label><label><input type="radio" name="payment-method" value="Apple Pay / Google Pay"> Apple Pay / Google Pay</label></div>
+        <button class="primary-btn" onclick="createDemoTicket()">Reservar entrada de prueba</button><p class="muted" id="ticket-feedback" aria-live="polite">No se realizará ningún cargo.</p>
+      </div>
+      <div id="ticket-my" class="ticket-panel hidden"><h3>Mis entradas</h3><div id="my-ticket-list"></div></div>
+      <div id="ticket-manage" class="ticket-panel hidden"><div class="notice-card"><strong>Panel del organizador</strong><p>Vista de prueba para validar entradas, tramitar solicitudes y limitar permisos del personal.</p></div>
+        <div class="admin-grid"><div><strong id="ticket-count">0</strong><span>Entradas demo</span></div><div><strong id="ticket-refund-count">0</strong><span>Solicitudes de devolución</span></div><div><strong id="ticket-scan-count">0</strong><span>Validaciones</span></div></div>
+        <h3>Permisos del personal</h3><label class="permission-row"><span><b>Control de acceso</b><small>Validar QR y ver estado</small></span><input id="perm-checkin" type="checkbox" checked></label>
+        <label class="permission-row"><span><b>Ver ventas</b><small>Consultar cantidades, sin datos de pago</small></span><input id="perm-sales" type="checkbox"></label><label class="permission-row"><span><b>Gestionar devoluciones</b><small>Reservado al propietario por defecto</small></span><input id="perm-refunds" type="checkbox"></label>
+        <button class="secondary-btn" onclick="saveDemoPermissions()">Guardar permisos de prueba</button><p id="permission-feedback" class="muted"></p>
+        <h3>Validar una entrada</h3><label>Código de entrada<input id="scan-code" class="form-input" placeholder="Ej. CH-123456"></label><button class="primary-btn" onclick="validateDemoTicket()">Validar código (demo)</button><p id="scan-feedback" class="muted" aria-live="polite"></p><h3>Solicitudes de devolución</h3><div id="refund-list"></div>
+      </div>
+    </section>
+
+    <section id="screen-profile" class="screen">
+      <header class="profile-cover"></header>
+      <div class="profile-card">
+        <div class="avatar large">IV</div><div class="verified">✓</div>
+        <h1>Mi perfil</h1><p class="handle">@chaitanio</p><p>“Good vibes, better people 💜”</p>
+        <div class="stats"><div><b>23</b><span>Amigos</span></div><div><b>4</b><span>Eventos</span></div><div><b>12.5K</b><span>Seguidores</span></div></div>
+      </div>
+      <div class="menu-list"><button onclick="editPersonalProfile()">👤 Editar mi perfil <span>›</span></button><button onclick="showScreen('tickets');switchTicketTab('my')">🎟️ Mis entradas <span>›</span></button><button onclick="showFavorites()">♡ Favoritos <span>›</span></button><button onclick="showNotifications()">🔔 Notificaciones <span>›</span></button><button onclick="showAccountChooser()">🔄 Cambiar tipo de cuenta <span>›</span></button><button onclick="showScreen('auth')">🔐 Crear cuenta / Iniciar sesión <span>›</span></button><button onclick="showSettings()">⚙️ Ajustes <span>›</span></button><button onclick="showHelp()">❔ Ayuda y soporte <span>›</span></button></div>
+    </section>
+
+    <button class="fab" onclick="openCreate()">＋</button>
+    <nav class="bottom-nav">
+      <button data-screen="home" onclick="showScreen('home')"><span>⌂</span>Inicio</button>
+      <button data-screen="events" onclick="showScreen('events')"><span>◉</span>Descubrir</button>
+      <button class="nav-space"></button>
+      <button data-screen="chat" onclick="showScreen('chat')"><span>◌</span>Chat<em>3</em></button>
+      <button data-screen="profile" onclick="showScreen('profile')"><span>♙</span>Perfil</button>
+    </nav>
+  </main>
+
+  <div id="create-modal" class="modal hidden">
+    <div class="modal-card"><button class="close" onclick="closeCreate()">×</button><h2>Crear en CHAITANIO</h2><label>Nombre del evento<input id="new-event-title" class="form-input" placeholder="Ej. Noche Latina"></label><button class="primary-btn" onclick="reserveCreated()">🎉 Crear evento</button><button onclick="closeCreate();showScreen('create-post')">📸 Publicar foto o contenido</button><button onclick="closeCreate();showScreen('live')">🔴 Ver Lives</button><button onclick="closeCreate();showScreen('business')">🏢 Cuenta de empresario</button><button onclick="closeCreate();showScreen('tickets');switchTicketTab('manage')">🎟️ Gestionar entradas y cobros</button><button onclick="alert('La creación de grupos se añadirá en una próxima versión.')">💬 Crear grupo (próximamente)</button></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
